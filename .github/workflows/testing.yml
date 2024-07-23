@@ -1,0 +1,28 @@
+name: Testing
+run-name: Testing
+on: [push]
+jobs:
+  bats-test:
+    name: bats-test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup BATS
+        uses: mig4/setup-bats@v1
+        with:
+          bats-version: 1.2.1
+      - name: Check out code
+        uses: actions/checkout@v1
+      - name: Test
+        run: bats -r .
+  go-test:
+    name: go-test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v1
+      - name: Setup Go
+        uses: actions/setup-go@v1
+        with:
+          go-version: 1.22.5
+      - name: Test
+        run: go test -v ./...
