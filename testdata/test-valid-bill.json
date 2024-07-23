@@ -1,0 +1,15 @@
+[
+  {
+    "name": "breakfast",
+    "involved": [
+      {
+        "name": "John",
+        "amount": 10
+      },
+        {
+            "name": "Jane",
+            "amount": -10
+        }
+    ]
+  }
+]
