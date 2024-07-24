@@ -15,8 +15,8 @@ type Bill struct {
 }
 
 type Person struct {
-	Name   string `json:"name"`
-	Amount int    `json:"amount"`
+	Name   string  `json:"name"`
+	Amount float64 `json:"amount"`
 }
 
 var filename string
@@ -47,9 +47,9 @@ func main() {
 	fmt.Println("Final imbalances per person:")
 	for name, imbalance := range imbalances {
 		if imbalance < 0 {
-			fmt.Printf("%s must give: %d;\n", name, imbalance*-1)
+			fmt.Printf("%s must give: %.2f;\n", name, imbalance*-1)
 		} else if imbalance > 0 {
-			fmt.Printf("%s must receive: %d;\n", name, imbalance)
+			fmt.Printf("%s must receive: %.2f;\n", name, imbalance)
 		}
 	}
 }
@@ -81,22 +81,42 @@ func readBills(filename string) ([]Bill, error) {
 }
 
 func validateBill(bill Bill) error {
-	sum := 0
+	sum := 0.0
+	numberOfSplitters := 0
 	for _, person := range bill.Involved {
 		sum += person.Amount
+		if person.Amount == 0 {
+			numberOfSplitters += 1
+		}
 	}
-	if sum != 0 {
-		return fmt.Errorf("bill %s has a non-zero sum: %d", bill.Name, sum)
+	if (sum != 0 && numberOfSplitters == 0) || (numberOfSplitters > 0 && sum <= 0) {
+		return fmt.Errorf("bill %s is not valid", bill.Name)
 	}
 	return nil
 }
 
-func calculateImbalances(bills []Bill) map[string]int {
-	imbalances := make(map[string]int)
+func calculateImbalances(bills []Bill) map[string]float64 {
+	imbalances := make(map[string]float64)
 
 	for _, bill := range bills {
+		var splitters []string
+		var payedAmount, exactAmount float64
 		for _, person := range bill.Involved {
-			imbalances[person.Name] += person.Amount
+			if person.Amount < 0 {
+				exactAmount += person.Amount
+				imbalances[person.Name] += person.Amount
+			} else if person.Amount > 0 {
+				payedAmount += person.Amount
+				imbalances[person.Name] += person.Amount
+			} else {
+				splitters = append(splitters, person.Name)
+			}
+		}
+		if len(splitters) > 0 {
+			amount := (payedAmount + exactAmount) / float64(len(splitters))
+			for _, splitter := range splitters {
+				imbalances[splitter] -= amount
+			}
 		}
 	}
 

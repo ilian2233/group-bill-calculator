@@ -1,0 +1,17 @@
+[
+  {
+    "name": "breakfast",
+    "involved": [
+      {
+        "name": "John",
+        "amount": 10
+      },
+      {
+        "name": "Jane"
+      },
+      {
+        "name": "Joe"
+      }
+    ]
+  }
+]

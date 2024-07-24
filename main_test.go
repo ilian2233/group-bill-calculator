@@ -67,7 +67,7 @@ func TestValidateBill(t *testing.T) {
 			hasError: false,
 		},
 		{
-			name: "Non-Zero Sum Bill",
+			name: "Non-Zero Sum Bill with no splitters",
 			bill: Bill{
 				Name: "Non-Zero Sum Bill",
 				Involved: []Person{
@@ -76,6 +76,30 @@ func TestValidateBill(t *testing.T) {
 				},
 			},
 			hasError: true,
+		},
+		{
+			name: "Non-Zero Sum Bill with splitters",
+			bill: Bill{
+				Name: "Non-Zero Sum Bill",
+				Involved: []Person{
+					{Name: "John", Amount: 10},
+					{Name: "Jane", Amount: -5},
+					{Name: "Jade"},
+				},
+			},
+			hasError: false,
+		},
+		{
+			name: "Equal split bill",
+			bill: Bill{
+				Name: "Non-Zero Sum Bill",
+				Involved: []Person{
+					{Name: "John", Amount: 10},
+					{Name: "Jane"},
+					{Name: "Jade"},
+				},
+			},
+			hasError: false,
 		},
 	}
 
@@ -93,7 +117,7 @@ func TestCalculateImbalances(t *testing.T) {
 	tests := []struct {
 		name               string
 		bills              []Bill
-		expectedImbalances map[string]int
+		expectedImbalances map[string]float64
 	}{
 		{
 			name: "Single Bill Multiple People",
@@ -101,12 +125,12 @@ func TestCalculateImbalances(t *testing.T) {
 				{
 					Name: "Lunch",
 					Involved: []Person{
-						{Name: "Alice", Amount: 10},
-						{Name: "Bob", Amount: -10},
+						{Name: "Alice", Amount: 10}, // Alice overpays 10
+						{Name: "Bob", Amount: -10},  // Bob owes 10
 					},
 				},
 			},
-			expectedImbalances: map[string]int{
+			expectedImbalances: map[string]float64{
 				"Alice": 10,
 				"Bob":   -10,
 			},
@@ -117,7 +141,7 @@ func TestCalculateImbalances(t *testing.T) {
 				{
 					Name: "Lunch",
 					Involved: []Person{
-						{Name: "Alice", Amount: 10},
+						{Name: "Alice", Amount: 10}, // Alice overpays 10
 						{Name: "Bob", Amount: -5},
 					},
 				},
@@ -129,7 +153,7 @@ func TestCalculateImbalances(t *testing.T) {
 					},
 				},
 			},
-			expectedImbalances: map[string]int{
+			expectedImbalances: map[string]float64{
 				"Alice": 5,
 				"Bob":   0,
 			},
@@ -137,7 +161,43 @@ func TestCalculateImbalances(t *testing.T) {
 		{
 			name:               "No Bills",
 			bills:              []Bill{},
-			expectedImbalances: map[string]int{},
+			expectedImbalances: map[string]float64{},
+		},
+		{
+			name: "Single Bill Equal Split",
+			bills: []Bill{
+				{
+					Name: "Lunch",
+					Involved: []Person{
+						{Name: "Alice", Amount: 10},
+						{Name: "Bob"},
+						{Name: "Jack"},
+					},
+				},
+			},
+			expectedImbalances: map[string]float64{
+				"Alice": 10,
+				"Bob":   -5,
+				"Jack":  -5,
+			},
+		},
+		{
+			name: "Single Bill unequal Split",
+			bills: []Bill{
+				{
+					Name: "Lunch",
+					Involved: []Person{
+						{Name: "Alice", Amount: 10},
+						{Name: "Bob", Amount: -3},
+						{Name: "Jack"},
+					},
+				},
+			},
+			expectedImbalances: map[string]float64{
+				"Alice": 10,
+				"Bob":   -3,
+				"Jack":  -7,
+			},
 		},
 	}
 

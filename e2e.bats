@@ -9,12 +9,31 @@ teardown() {
 }
 
 @test "Run with valid JSON file" {
-  run ./bills_calculator -file testdata/test-valid-bill.json
+  run ./bills_calculator -file testdata/valid-bill.json
   [ "$status" -eq 0 ]
-  [ "${lines[0]}" = "Final imbalances per person:" ]
-  [ "${lines[1]}" = "John must receive: 10;" ]
-  [ "${lines[2]}" = "Jane must give: 10;" ]
+  [[ "${lines[@]}" =~ "Final imbalances per person:" ]]
+  [[ "${lines[@]}" =~ "John must receive: 10.00;" ]]
+  [[ "${lines[@]}" =~ "Jane must give: 10.00;" ]]
 }
+
+@test "Run with equally split bill file" {
+  run ./bills_calculator -file testdata/equally-split-bill.json
+  [ "$status" -eq 0 ]
+  [[ "${lines[@]}" =~ "Final imbalances per person:" ]]
+  [[ "${lines[@]}" =~ "John must receive: 10.00;" ]]
+  [[ "${lines[@]}" =~ "Jane must give: 5.00;" ]]
+  [[ "${lines[@]}" =~ "Joe must give: 5.00;" ]]
+}
+
+@test "Run with unequally split bill file" {
+  run ./bills_calculator -file testdata/unequally-split-three-way-bill.json
+  [ "$status" -eq 0 ]
+  [[ "${lines[@]}" =~ "Final imbalances per person:" ]]
+  [[ "${lines[@]}" =~ "John must receive: 10.00;" ]]
+  [[ "${lines[@]}" =~ "Jane must give: 3.00;" ]]
+  [[ "${lines[@]}" =~ "Joe must give: 7.00;" ]]
+}
+
 
 @test "Run with invalid JSON file" {
   run ./bills_calculator -file temp_invalid.json
